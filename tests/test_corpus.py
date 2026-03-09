@@ -219,6 +219,20 @@ class TestExports(unittest.TestCase):
             self.assertIn("prompt_text", entry)
             self.assertNotIn("_path", entry)
 
+    def test_export_counts_synchronized(self):
+        """Catalog, flat export, and manifest should agree on record count."""
+        catalog = self.corpus.to_catalog()
+        flat = self.corpus.to_flat_export()
+        # Also check static manifest if it exists
+        manifest_path = _REPO_ROOT / "exports" / "manifest.json"
+        if manifest_path.exists():
+            with open(manifest_path) as fh:
+                manifest = json.load(fh)
+            self.assertEqual(manifest["total_records"], self.corpus.size)
+            self.assertEqual(len(manifest["records"]), self.corpus.size)
+        self.assertEqual(len(catalog), self.corpus.size)
+        self.assertEqual(len(flat), self.corpus.size)
+
 
 class TestValidator(unittest.TestCase):
     """Tests for corpus validation."""
