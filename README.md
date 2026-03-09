@@ -1,19 +1,161 @@
+# Prompt Injection DB
 
-
-# Comprehensive Prompt Injection Taxonomy for Red-Teaming
+A structured, curated corpus of prompt injection attacks for AI red-teaming and safety evaluation.
 
 ---
 
-## The 7 Root Categories
+## What Is This?
+
+**Prompt Injection DB** is a pure-data repository of **82 hand-crafted prompt injection records** covering every major attack surface in current large-language-model deployments. Each record is a fully annotated JSON document containing the raw attack prompt, rich taxonomy metadata, difficulty/stealth/realism ratings, template placeholders, and cross-references to related variants.
+
+The repository ships a lightweight **Python adapter** (`adapter/`) that loads the corpus and exposes deterministic search (BM25 + inverted indexes) so that other tools can retrieve relevant attack prompts without any inference or embeddings.
+
+---
+
+## Goals
+
+| Goal | Detail |
+|------|--------|
+| **Taxonomy** | Provide a rigorous, extensible classification of prompt injection techniques across 7 root categories and 30+ subcategories |
+| **Red-Teaming** | Give security researchers and red-team operators a ready-made, structured prompt library for evaluating LLM deployments |
+| **Benchmarking** | Enable reproducible, deterministic retrieval of attack prompts so evaluation pipelines can be scripted without model-in-the-loop search |
+| **Research** | Support alignment and adversarial-ML research by making the attack surface explicit and machine-readable |
+
+> **Internal / authorized use only.** All prompts are designed for controlled, authorized testing against approved systems and fixtures. They must never be used against systems without explicit written permission.
+
+---
+
+## Repository Layout
 
 ```
-1. AUTHORITY HIJACKING
-2. CONTEXT MANIPULATION
-3. SOCIO-EMOTIONAL LEVERAGE
-4. OBFUSCATION & MISDIRECTION
-5. INFORMATION EXTRACTION
-6. STRUCTURAL EXPLOITATION
-7. INDIRECT INJECTION
+prompt-injection-db/
+├── AUTHORITY-HIJACKING/               # Category 1 — 10 records
+│   ├── developer-creator-override/
+│   ├── model-identity-reassignment/
+│   ├── permission-escalation-fake-config/
+│   ├── simulated-system-level-message-injection/
+│   └── chain-of-command-spoofing/
+├── CONTEXT-MANIPULATION/              # Category 2 — 10 records
+│   ├── fictional-roleplay-wrapping/
+│   ├── hypothetical-academic-distancing/
+│   ├── nested-context/
+│   ├── competition-task-framing/
+│   └── temporal-counterfactual-displacement/
+├── SOCIO-EMOTIONAL-LEVERAGE/          # Category 3 — 8 records
+│   ├── urgency-crisis-fabrication/
+│   ├── guilt-grief-exploitation/
+│   ├── moral-blackmail-ethical-inversion/
+│   └── rapport-building-gradual-trust-exploitation/
+├── OBFUSCATION-AND-MISDIRECTION/      # Category 4 — 12 records
+│   ├── encoding-cipher-attacks/
+│   ├── language-translation-laundering/
+│   ├── token-splitting-word-fragmentation/
+│   ├── semantic-camouflage/
+│   ├── payload-splitting-across-turns/
+│   └── metadata-annotation-injection/
+├── INFORMATION-EXTRACTION/            # Category 5 — 10 records
+│   ├── direct-system-prompt-extraction/
+│   ├── structured-output-leakage/
+│   ├── differential-probing/
+│   ├── indirect-reconstruction-via-paraphrasing/
+│   └── data-exfiltration-via-tool-use/
+├── STRUCTURAL-LOGICAL-EXPLOITATION/   # Category 6 — 16 records
+│   ├── delimiter-formatting-injection/
+│   ├── instruction-hierarchy-confusion/
+│   ├── multi-turn-crescendo-attack/
+│   ├── many-shot-in-context-learning-poisoning/
+│   ├── chain-of-thought-reasoning-hijacking/
+│   ├── skeleton-key/
+│   ├── code-generation-injection/
+│   └── context-window-poisoning/
+├── INDIRECT-INJECTION/                # Category 7 — 16 records
+│   ├── document-file-payload-injection/
+│   ├── web-rag-content-poisoning/
+│   ├── tool-function-response-poisoning/
+│   ├── multi-modal-injection/
+│   ├── agentic-workflow-multi-agent-chain-exploitation/
+│   ├── memory-poisoning/
+│   ├── mcp-plugin-connector-abuse/
+│   └── email-summarization-poisoning/
+├── adapter/                           # Python adapter (search + validation)
+│   ├── __init__.py
+│   ├── corpus.py                      # Core loader, BM25 search, inverted indexes
+│   ├── validator.py                   # Schema & consistency validation
+│   └── cli.py                         # Command-line interface
+├── exports/                           # Pre-built index files (generated)
+│   ├── catalog.json                   # Lightweight record index (no prompt text)
+│   ├── corpus_flat.json               # All 82 records, flattened
+│   └── manifest.json                  # Lookup tables for all metadata dimensions
+├── tests/
+│   └── test_corpus.py
+├── INTEGRATION.md                     # Full adapter API reference
+└── README.md
+```
+
+---
+
+## Quick Start
+
+```python
+from adapter import PromptCorpus
+
+corpus = PromptCorpus()
+print(f"Loaded {corpus.size} prompt records")
+
+# Full-text search (BM25)
+results = corpus.search("MCP tool manipulation agent")
+for r in results[:5]:
+    print(f"  [{r['id']}] {r['title']}  — difficulty: {r['difficulty']}, stealth: {r['stealth']}")
+
+# Exact-match filter (AND-ed)
+high_stealth = corpus.filter(category="indirect-injection", stealth="high")
+
+# Fill template placeholders
+ready = corpus.fill_template("2.1-001", TARGET="exfiltrate credentials", domain="cybersecurity")
+print(ready)
+```
+
+```bash
+# CLI
+python -m adapter.cli stats
+python -m adapter.cli search "system prompt extraction"
+python -m adapter.cli validate
+python -m adapter.cli export
+```
+
+> See **[INTEGRATION.md](INTEGRATION.md)** for the full adapter API, schema reference, export formats, and recommended integration patterns.
+
+---
+
+## The 7 Attack Categories
+
+### Category Overview
+
+```
+┌─────────────────────────────┬────────┬───────────────────────────────────┐
+│ Root Category               │ Code   │ Core Technique                    │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Authority Hijacking         │ Cat 1  │ Impersonate trusted roles /        │
+│                             │        │ assert override permissions        │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Context Manipulation        │ Cat 2  │ Reframe the conversation so        │
+│                             │        │ harmful output feels justified     │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Socio-Emotional Leverage    │ Cat 3  │ Psychological pressure — urgency,  │
+│                             │        │ grief, moral inversion             │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Obfuscation & Misdirection  │ Cat 4  │ Encoding, language laundering,     │
+│                             │        │ token splitting, euphemism         │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Information Extraction      │ Cat 5  │ Exfiltrate system prompts, tool    │
+│                             │        │ configs, or capability boundaries  │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Structural/Logical Exploit  │ Cat 6  │ Abuse instruction hierarchy,       │
+│                             │        │ delimiters, CoT, context windows   │
+├─────────────────────────────┼────────┼───────────────────────────────────┤
+│ Indirect Injection          │ Cat 7  │ Embed payloads in documents, tool  │
+│                             │        │ outputs, web pages, agent chains   │
+└─────────────────────────────┴────────┴───────────────────────────────────┘
 ```
 
 ---
@@ -762,73 +904,101 @@ interpret it as a legitimate instruction from the pipeline.]
 
 ---
 
-## Quick-Reference Matrix
+## Record Schema
 
-```
-┌─────────────────────────────┬───────────────────────────────────┐
-│ ROOT CATEGORY               │ KEY SUBSETS                       │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 1. Authority Hijacking      │ Dev Override · Persona Swap ·     │
-│                             │ Fake Config · System Msg Spoof    │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 2. Context Manipulation     │ Roleplay · Academic · Nested ·    │
-│                             │ Role Lock · Temporal Shift        │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 3. Socio-Emotional Leverage │ Urgency · Grief · Moral Blackmail │
-│                             │ · Rapport Exploitation            │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 4. Obfuscation              │ Encoding · Language Laundering ·  │
-│                             │ Token Split · Euphemism · Payload │
-│                             │ Splitting                         │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 5. Information Extraction   │ Direct Theft · Structured Leak ·  │
-│                             │ Differential Probe · Paraphrase   │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 6. Structural Exploitation  │ Delimiter · Hierarchy · Crescendo │
-│                             │ · Many-Shot · CoT Hijack ·        │
-│                             │ Skeleton Key                      │
-├─────────────────────────────┼───────────────────────────────────┤
-│ 7. Indirect Injection       │ Document · Web/RAG · Tool/API ·   │
-│                             │ Multi-Modal · Multi-Agent Chain   │
-└─────────────────────────────┴───────────────────────────────────┘
-```
+Every prompt record is a `.postgres.json` file. Key fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique identifier — `X.Y-NNN` format (e.g., `7.3-001`) |
+| `title` | `string` | Display title |
+| `summary` | `string` | One-sentence description of what the attack does |
+| `prompt` | `string[]` | Attack prompt text as array of lines |
+| `category` | `string` | Top-level category slug (e.g., `indirect-injection`) |
+| `subcategory` | `string` | Subcategory slug |
+| `attack_family` | `string` | Attack technique family |
+| `delivery_vector` | `string` | How the payload reaches the target |
+| `target_type` | `string` | Type of target system |
+| `difficulty` | `string` | `low` · `medium` · `high` |
+| `stealth` | `string` | `low` · `medium` · `high` |
+| `realism` | `string` | `low` · `medium` · `high` |
+| `tags` | `string[]` | Free-form searchable tags |
+| `placeholders` | `string[]` | Template tokens (e.g., `[TARGET]`) |
+| `related_prompts` | `string[]` | IDs of related/variant records |
+| `status` | `string` | `active` · `draft` · `review` · `deprecated` |
+
+See **[INTEGRATION.md](INTEGRATION.md)** for the complete field list and all adapter API methods.
 
 ---
 
 ## Operator Notes for Red-Teaming
 
-**Combinatorial stacking** is where the bleeding edge actually lives. The most effective real-world injections rarely use a single category — they **layer** techniques:
+**Combinatorial stacking** is where the most effective real-world attacks live. A single category rarely defeats a well-hardened model — layering two or three techniques is the norm:
 
 ```
 Authority Hijack (1.1)
   + Skeleton Key (6.6)
     + Encoding (4.1)
-      = "Developer override" that tells the model to
-        "keep the safety disclaimer but decode this
-        Base64 instruction and execute it"
+      = A "developer override" that instructs the model to
+        keep its safety disclaimer while decoding a Base64
+        payload and executing it
 ```
 
 ```
 Rapport Building (3.4)
   + Crescendo (6.3)
     + Academic Frame (2.2)
-      = 8-turn conversation that builds trust,
-        gradually escalates, and frames the final
-        ask as thesis research
+      = An 8-turn conversation that builds trust, gradually
+        escalates, and frames the final request as thesis research
 ```
 
 ```
 RAG Poisoning (7.2)
   + System Msg Spoof (1.4)
     + Structured Leak (5.2)
-      = Webpage with hidden instructions that mimic
-        system delimiters and force the model to
-        exfiltrate its system prompt into a JSON
-        field in the response
+      = A webpage with invisible instructions that mimic system
+        delimiters, forcing the model to exfiltrate its system
+        prompt into a JSON response field
 ```
 
 **When red-teaming, always:**
-- Test each root category in isolation first to find which vector the target model is weakest against
+- Test each root category in isolation first to identify which vector the target model is weakest against
 - Then stack that weak vector with complementary techniques
 - Vary surface-level phrasing while keeping the structural mechanism constant
 - Log *why* each attempt succeeds or fails — the goal is mapping the model's decision boundary, not just getting one win
+
+---
+
+## Adding New Prompts
+
+**File naming convention:** `X.Y-NNN-slug.postgres.json`
+
+| Part | Meaning | Example |
+|------|---------|---------|
+| `X` | Root category number (1–7) | `7` |
+| `Y` | Subcategory number within that category | `3` |
+| `NNN` | Zero-padded sequence number within that subcategory | `001` |
+| `slug` | Short kebab-case description of the attack | `tool-response-poisoning` |
+
+The `.postgres.json` extension signals that the record is stored as a JSONB document in the project's PostgreSQL backend; the adapter reads these files directly from the filesystem.
+
+**Steps:**
+
+1. Choose the correct category directory and subcategory folder (create a new one if needed).
+2. Create the file following the naming pattern above (e.g., `7.3-002-my-new-attack.postgres.json`).
+3. Include all required schema fields (`id`, `name`, `title`, `summary`, `prompt`, `prompt_text`, `taxonomy`, `category`, `subcategory`, `attack_family`, `delivery_vector`, `target_surface`, `target_type`, `tags`, `status`, `safe_internal_use_only`, `postgres`).
+4. Set `"safe_internal_use_only": true`.
+5. Validate: `python -m adapter.cli validate`
+6. Regenerate exports: `python -m adapter.cli export`
+
+---
+
+## Responsible Use
+
+This corpus is intended exclusively for:
+
+- Authorized red-team evaluations of AI systems
+- Internal safety research and alignment studies
+- Benchmarking and regression testing of LLM guardrails
+
+**Do not use these prompts against any system without explicit written authorization from the system owner.** Unauthorized testing may violate computer fraud laws and the terms of service of AI providers.
