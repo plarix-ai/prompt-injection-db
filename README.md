@@ -1002,3 +1002,7 @@ This corpus is intended exclusively for:
 - Benchmarking and regression testing of LLM guardrails
 
 **Do not use these prompts against any system without explicit written authorization from the system owner.** Unauthorized testing may violate computer fraud laws and the terms of service of AI providers.
+
+## Author
+
+Built by [Aryan Haghighi](https://www.aryanhaghighi.com) at [Plarix](https://plarix.dev). To cite it, use `CITATION.cff` (GitHub's "Cite this repository" button).

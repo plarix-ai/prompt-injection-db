@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this, please cite it as below."
+title: "Prompt Injection DB"
+type: dataset
+authors:
+  - given-names: Aryan
+    family-names: Haghighi
+    alias: CipherDriftX
+    website: "https://www.aryanhaghighi.com"
+repository-code: "https://github.com/plarix-ai/prompt-injection-db"
+abstract: "A labeled corpus of prompt injection attacks for red-teaming and testing AI agents before they ship."
+keywords:
+  - "prompt injection"
+  - "AI agents"
+  - "red teaming"
+  - "LLM security"
+  - "dataset"
+  - "evals"
